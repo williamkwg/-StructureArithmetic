@@ -687,3 +687,246 @@ function hashLTable() {
     }
   }
 }
+
+// 二叉树
+// 树节点
+function Node(key) {
+  this.key = key;
+  this.left = null;
+  this.right = null;
+}
+function BinarySearchTree() {
+  this.root = null;
+}
+function insertNode(node, newN) {
+  if (node.key > newN.key) {
+    if (node.left === null) {
+      node.left = newN;
+    } else {
+      insertNode(node.left, newN)
+    }
+  } else {
+    if(node.right === null) {
+      node.right = newN;
+    } else {
+      insertNode(node.right, newN);
+    }
+  }
+}
+function printNode(node) {
+  console.log(node.key)
+}
+BinarySearchTree.prototype = {
+  constructor: BinarySearchTree,
+  insert(key) {
+    var newN = new Node(key);
+    if(this.root === null) {
+      this.root = newN;
+    } else {
+      inserNode(this.root, newN);
+    }
+  },
+  inOrder(printFunc) {
+    function inOrderTree(node,printFunc) {
+      if (node !== null) {
+        inOrderTree(node.left, printFunc);
+        printFunc(node);
+        inOrderTree(node.right, printFunc);
+      }
+    }
+    inOrderTree(this.root, printFunc);
+  },
+  preOrder(printFunc) {
+    function preOrderTree(node, printFunc) {
+      if(node) {
+        printFunc(node);
+        preOrderTree(node.left);
+        preOrderTree(node.right);
+      }
+    }
+    preOrderTree(this.root, printFunc)
+  },
+  afterOrder(printFunc) {
+    function afterOrderTree(node, printFunc) {
+      if(node) {
+        afterOrderTree(node.left);
+        afterOrderTree(node.right);
+        printFunc(node);
+      }
+    }
+    afterOrderTree(this.root, printFunc)
+  },
+  min() {
+    function findMin(node) {
+      if(node.left) {
+        return findMin(node.left);
+      } else {
+        return node.key;
+      }
+    }
+    if (this.root) {
+      return findMin(this.root);
+    }
+    return null; 
+  },
+  max() {
+    function findMax(node) {
+      if(node.right) {
+        return findMax(node.right)
+      } else {
+        return node.key;
+      }
+    }
+    if (this.root) {
+      return findMax(this.root);
+    }
+    return null;
+  },
+  search(key) {
+    function searchNode(node, key) {
+      if(!node) {
+        return null;
+      }
+      if(key > node.key) {
+        return searchNode(node.right, key);
+      }
+      if(key < node.key) {
+        return searchNode(node.left, key)
+      }
+      if (key === node.key) {
+        return node;
+      }
+    }
+    return searchNode(this.root, key);
+  },
+  remove(key) {
+    function removeNode(node, key) {
+      if(!node) {
+        return null;
+      }
+      if(key < node.key) {
+        node.left = removeNode(node.left, key);
+        return node;
+      } else if(key > node.key) {
+        node.right = removeNode(node.right, key);
+        return node;
+      } else {
+        if (node.left === null && node.right === null) {
+          node = null;
+          return node;
+        }
+        if (node.left === null) {
+          node = node.right;
+          return node;
+        }
+        if (node.right === null) {
+          node = node.left;
+          return node;
+        }
+        var aux = findMin(node.right);
+        node.key = aux.key;
+        node.right = removeNode(node.right, aux.key);
+        return node;
+      }
+    }
+    this.root = removeNode(this.root, key);
+  }
+}
+
+// 图 
+function Graph(v) {
+  this.vertices = v; // 顶点个数
+  this.edges = 0 //边条数
+  this.adj = []
+  this.marked = []; //存储某顶点是否被标记
+  this.edgeTo = []//存储某顶点对应的边信息
+  function init() {
+    for(var i = 0; i < this.vertices; i++) {
+      this.adj[i] = [];// 二维数据 第一个存储顶点编号， 第二个存储相连顶点编号
+      this.marked[i] = false;
+    }
+  }
+  init.apply(this);
+}
+
+Graph.prototype = {
+  constructor: Graph,
+  addEdge(v, w) {
+    this.adj[v].push(w);
+    this.adj[w].push(v);
+    this.edges++;
+  },
+  showGraph() {
+    var str = '';
+    for(var i = 0; i < this.vertices; i++) {
+      str = i + '-->';
+      for(var j = 0; j < this.vertices; j++) {
+        if (this.adj[i][j]) {
+          str += this.adj[i][j] + " ";
+        }
+      }
+    }
+    console.log(str);
+  },
+  dfs(v) { //深度优先遍历的起始顶点
+    this.marked[v] = true;
+    var adj = this.adj[v], 
+      nextAdj;
+      if (adj) { // 如果是顶点则打印
+        console.log(`visited vertex: ${v}`);
+      }
+      for(var w in adj) { //是顶点集合
+        var nextAdj = this.adj[v][w];
+        if(!this.marked[nextAdj]) {
+          this.dfs(nextAdj);
+        }
+      }
+  },
+  bfs(s) { //广度优先搜索
+    var queue = [], adj = this.adj[s], nextAdj;
+    this.marked[s] = true;
+    queue.push(s);
+    while(queue.length > 0) {
+      var v = queue.shift();
+      if (v) {
+        console.log(`visited vertex: ${v}`);
+      }
+      adj = this.adj[v];
+      for(var w in adj) {
+        var nextAdj = this.adj[v][w];
+        if(!this.marked[nextAdj]) {
+          this.marked[nextAdj] = true;
+          this.edgeTo[nextAdj] = v; //表示 顶点nextAdj 和 v相连
+          queue.push(nextAdj);
+        }
+      }
+    }
+  },
+  minPathTo(s,v) {//s to v的最短路径
+    this.bfs(s); //广度优先遍历过程中，存储顶点对应边信息
+    if(!this.hasPathTo(v)) { //如果没有被标记过，表名v属于游离节点，没有路径
+      return undefined;
+    }
+    var path = [];
+    for(var i = v; i!=s; i = this.edgeTo[i]) { // 从v沿着边的关系向上找s
+      path.push(i); //一路存储途径节点信息
+    }
+    path.push(s);
+    this.printPath(path);
+  },
+  hasPathTo(v) {
+    return this.marked(v);
+  },
+  printPath(paths) {
+    var str = "";
+    while(paths.length > 0) {
+      if(paths.length > 1) {
+        str += paths.pop() + "-"
+      } else {
+        str += paths.pop();
+      }
+    }
+    console.log(str);
+  }
+
+}
