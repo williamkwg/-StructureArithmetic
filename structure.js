@@ -928,5 +928,74 @@ Graph.prototype = {
     }
     console.log(str);
   }
+}
 
+// 图的实现
+function Graph() {
+  this.vertices = []; //顶点数组
+  this.adjList = new Dictionary()
+}
+
+Graph.prototype = {
+  constructor: Graph,
+  addVertex(v) { // 添加节点
+    this.vertices.push(v);
+    this.adjList.set(v, []); // 给节点v设置一个空数组存储相连顶点集合
+  },
+  addEdge(v, w) { //添加边
+    this.adjList.get(v).push(w);
+    this.adjList.get(w).push(v);
+  },
+  bfs(v, cb) { //广度优先遍历 v表示 遍历的起点
+    var markedList = this.marked();
+    var queue = new Queue(); //存储待访问的节点
+    queue.enqueue(v);
+    while(!queue.isEmpty()) {
+      var u = queue.dequeue();
+      var neighbors = this.adjList.get(u); // 获取与u相邻的节点列表
+      markedList[u] = 'grey'; // 标记u节点被访问过的状态
+      for(var i = 0; i < neighbors.length; i++) {
+        // 依次将u相邻节点 入队列
+        var w = neighbors[i];
+        if(markedList[w] === 'white') {
+          markedList[w] = 'grey';
+          queue.enqueue(w);
+        }
+      }
+      markedList[u] = 'black'; //黑色标识 u的所有节点都被访问过
+      if(cb) {
+        cb(u);
+      }
+    }
+  },
+  dfs(cb) { // 深度优先遍历
+    var markedList = this.marked();
+    var vertices = this.vertices;
+    function dfsVisit(u, markedList, cb) {
+      markedList[u] = 'grey';
+      if (cb) {
+        cb(u);
+      }
+      var neighbors = this.adjList.get(u);
+      for(var i = 0; i<neighbors.length;i++) {
+        var w = neighbors[i];
+        if(markedList[w] === 'white') {
+          dfsVisit(w, markedList, cb);
+        }
+      }
+      markedList[u] = 'black';
+    }
+    for(var i = 0; i< vertices.length; i++) {
+      if(markedList[vertices[i]] === 'white') {
+        dfsVisit.call(this, vertices[i], markedList, cb);
+      }
+    }
+  },
+  marked() { 
+    var color = []
+    for(var i  = 0; i < this.vertices; i++ ) {
+      color[this.vertices[i]] = 'white'
+    }
+    return color;
+  }
 }
